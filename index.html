@@ -23,7 +23,7 @@
   <h1>Radiology MCQ App</h1>
 
   <label for="topic-select">Topic:</label><br>
-  <select id="topic-select"><option value="">--Select Topic--</option></select><br>
+  <select id="topic-select" disabled><option value="">--Select Topic--</option></select><br>
 
   <label for="subtopic-select">Subtopic:</label><br>
   <select id="subtopic-select" disabled><option value="">--Select Subtopic--</option></select>
@@ -43,37 +43,38 @@
   <div id="summary" hidden></div>
 
   <script>
-    const JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
+    var JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
 
-    let data = [];
-    let questions = [];
-    let currentIndex = 0;
+    var data = [];
+    var questions = [];
+    var currentIndex = 0;
 
-    const topicSelect      = document.getElementById('topic-select');
-    const subtopicSelect   = document.getElementById('subtopic-select');
-    const questionContainer= document.getElementById('question-container');
-    const progressEl       = document.getElementById('progress');
-    const questionText     = document.getElementById('question-text');
-    const questionImage    = document.getElementById('question-image');
-    const optionsDiv       = document.getElementById('options');
-    const explanationEl    = document.getElementById('explanation');
-    const prevBtn          = document.getElementById('prev-btn');
-    const nextBtn          = document.getElementById('next-btn');
-    const summaryEl        = document.getElementById('summary');
+    var topicSelect       = document.getElementById('topic-select');
+    var subtopicSelect    = document.getElementById('subtopic-select');
+    var questionContainer = document.getElementById('question-container');
+    var progressEl        = document.getElementById('progress');
+    var questionText      = document.getElementById('question-text');
+    var questionImage     = document.getElementById('question-image');
+    var optionsDiv        = document.getElementById('options');
+    var explanationEl     = document.getElementById('explanation');
+    var prevBtn           = document.getElementById('prev-btn');
+    var nextBtn           = document.getElementById('next-btn');
+    var summaryEl         = document.getElementById('summary');
 
     // Fetch MCQs
     fetch(JSON_URL)
-      .then(res => res.json())
-      .then(json => {
+      .then(function(res) { return res.json(); })
+      .then(function(json) {
         data = json;
         initTopics();
       })
-      .catch(err => alert('Error loading MCQs: ' + err));
+      .catch(function(err) { alert('Error loading MCQs: ' + err); });
 
     function initTopics() {
-      const topicSet = new Set(data.map(item => item.Topic));
-      topicSet.forEach(topic => {
-        const opt = document.createElement('option');
+      var topicSet = {};
+      data.forEach(function(item) { topicSet[item.Topic] = true; });
+      Object.keys(topicSet).forEach(function(topic) {
+        var opt = document.createElement('option');
         opt.value = topic;
         opt.textContent = topic;
         topicSelect.appendChild(opt);
@@ -81,7 +82,7 @@
       topicSelect.disabled = false;
     }
 
-    topicSelect.addEventListener('change', () => {
+    topicSelect.addEventListener('change', function() {
       subtopicSelect.innerHTML = '<option value="">--Select Subtopic--</option>';
       questionContainer.hidden = true;
       summaryEl.hidden = true;
@@ -89,11 +90,15 @@
         subtopicSelect.disabled = true;
         return;
       }
-      const subs = data
-        .filter(item => item.Topic === topicSelect.value)
-        .map(item => item.Subtopic);
-      Array.from(new Set(subs)).forEach(sub => {
-        const opt = document.createElement('option');
+      var subs = data.filter(function(item) {
+        return item.Topic === topicSelect.value;
+      }).map(function(item) {
+        return item.Subtopic;
+      });
+      var uniqueSubs = {};
+      subs.forEach(function(sub) { uniqueSubs[sub] = true; });
+      Object.keys(uniqueSubs).forEach(function(sub) {
+        var opt = document.createElement('option');
         opt.value = sub;
         opt.textContent = sub;
         subtopicSelect.appendChild(opt);
@@ -101,105 +106,107 @@
       subtopicSelect.disabled = false;
     });
 
-    subtopicSelect.addEventListener('change', () => {
+    subtopicSelect.addEventListener('change', function() {
       if (!subtopicSelect.value) return;
-      questions = data.filter(item => item.Subtopic === subtopicSelect.value);
+      questions = data.filter(function(item) {
+        return item.Subtopic === subtopicSelect.value;
+      });
       currentIndex = 0;
-      questions.forEach(q => q.wasCorrect = false);
+      questions.forEach(function(q) { q.wasCorrect = false; });
       renderQuestion();
     });
 
     function renderQuestion() {
-      const item = questions[currentIndex];
+      var item = questions[currentIndex];
       questionContainer.hidden = false;
       summaryEl.hidden = true;
 
-      progressEl.textContent       = \`Question \${currentIndex+1} of \${questions.length}\`;
-      questionText.textContent     = item.Question;
+      progressEl.textContent   = 'Question ' + (currentIndex+1) + ' of ' + questions.length;
+      questionText.textContent = item.Question;
 
-      // Dynamic Image Key Detection & Drive link conversion
-      let url = '';
-      const imageKey = Object.keys(item).find(k => /image/i.test(k));
-      if (imageKey && item[imageKey]) {
-        url = item[imageKey];
-        const gdMatch = url.match(/\/d\/([^\/]+)\//);
-        if (gdMatch) {
-          url = \`https://drive.google.com/uc?export=view&id=\${gdMatch[1]}\`;
+      // Image detection and conversion
+      var url = '';
+      for (var key in item) {
+        if (/image/i.test(key) && item[key]) {
+          url = item[key];
+          var match = url.match(/\/d\/([^\/]+)\//);
+          if (match) {
+            url = 'https://drive.google.com/uc?export=view&id=' + match[1];
+          }
+          break;
         }
       }
       if (url) {
-        questionImage.src     = url;
-        questionImage.hidden  = false;
-        questionImage.onerror = () => {
+        questionImage.src = url;
+        questionImage.hidden = false;
+        questionImage.onerror = function() {
           questionImage.hidden = true;
-          const link = document.createElement('a');
-          link.href    = url;
-          link.target  = '_blank';
+          var link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
           link.textContent = 'Open Image in new tab';
           link.style.display = 'block';
           link.style.marginBottom = '1rem';
-          questionImage.insertAdjacentElement('afterend', link);
+          questionImage.parentNode.insertBefore(link, questionImage.nextSibling);
         };
       } else {
         questionImage.hidden = true;
       }
 
       // Render options
-      optionsDiv.innerHTML  = '';
-      explanationEl.hidden  = true;
-      prevBtn.disabled      = currentIndex === 0;
-      nextBtn.disabled      = true;
-      const correctLabel    = item.Answer.startsWith('Option')
-                             ? item.Answer
-                             : \`Option \${item.Answer}\`;
+      optionsDiv.innerHTML = '';
+      explanationEl.hidden = true;
+      prevBtn.disabled = (currentIndex === 0);
+      nextBtn.disabled = true;
+      var correctLabel = item.Answer.charAt(0).toUpperCase() === 'O' ? item.Answer : 'Option ' + item.Answer;
 
-      ['Option A','Option B','Option C','Option D','Option E'].forEach(label => {
+      ['Option A','Option B','Option C','Option D','Option E'].forEach(function(label) {
         if (item[label]) {
-          const btn = document.createElement('button');
+          var btn = document.createElement('button');
           btn.textContent = item[label];
-          btn.className   = 'option';
-          btn.onclick     = () => selectOption(btn, item[label], item[correctLabel]);
+          btn.className = 'option';
+          btn.onclick = function() { selectOption(btn, item[label], item[correctLabel]); };
           optionsDiv.appendChild(btn);
         }
       });
     }
 
     function selectOption(btn, chosenText, correctText) {
-      Array.from(optionsDiv.children).forEach(el => el.disabled = true);
+      Array.prototype.forEach.call(optionsDiv.children, function(el) { el.disabled = true; });
       if (chosenText === correctText) {
         btn.classList.add('correct');
         questions[currentIndex].wasCorrect = true;
       } else {
         btn.classList.add('wrong');
-        Array.from(optionsDiv.children).forEach(el => {
+        Array.prototype.forEach.call(optionsDiv.children, function(el) {
           if (el.textContent === correctText) el.classList.add('correct');
         });
       }
       explanationEl.textContent = questions[currentIndex].Explanation || '';
-      explanationEl.hidden      = false;
-      nextBtn.disabled          = false;
+      explanationEl.hidden = false;
+      nextBtn.disabled = false;
     }
 
-    prevBtn.addEventListener('click', () => {
+    prevBtn.addEventListener('click', function() {
       if (currentIndex > 0) {
         currentIndex--;
         renderQuestion();
       }
     });
 
-    nextBtn.addEventListener('click', () => {
+    nextBtn.addEventListener('click', function() {
       if (currentIndex < questions.length - 1) {
         currentIndex++;
         renderQuestion();
       } else {
-        const correctCount = questions.filter(q => q.wasCorrect).length;
+        var correctCount = questions.filter(function(q) { return q.wasCorrect; }).length;
         questionContainer.hidden = true;
-        summaryEl.innerHTML = \`
-          <h2>Completed</h2>
-          <p>You answered <strong>\${correctCount}/\${questions.length}</strong> correctly.</p>\`;
+        summaryEl.innerHTML = '<h2>Completed</h2>' +
+                              '<p>You answered <strong>' + correctCount + '/' + questions.length + '</strong> correctly.</p>';
         summaryEl.hidden = false;
       }
     });
   </script>
 </body>
 </html>
+
