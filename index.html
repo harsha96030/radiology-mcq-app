@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Radiology MCQ App</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; max-width: 800px; }
+    select, button { margin: 0.5rem 0; padding: 0.5rem; font-size: 1rem; }
+    #question-container { margin-top: 1rem; }
+    #progress { font-weight: bold; margin-bottom: 0.5rem; }
+    #question-text { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    #question-image { max-width: 100%; height: auto; margin-bottom: 0.5rem; }
+    .option { display: block; margin: 0.5rem 0; padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+    .option.correct { background-color: #c8e6c9; }
+    .option.wrong { background-color: #ffcdd2; }
+    #explanation { margin-top: 1rem; font-style: italic; }
+    #nav-buttons { margin-top: 1rem; }
+    #summary { margin-top: 2rem; font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <h1>Radiology MCQ App</h1>
+
+  <label for="topic-select">Topic:</label><br>
+  <select id="topic-select"><option value="">--Select Topic--</option></select><br>
+
+  <label for="subtopic-select">Subtopic:</label><br>
+  <select id="subtopic-select" disabled><option value="">--Select Subtopic--</option></select>
+
+  <div id="question-container" hidden>
+    <div id="progress"></div>
+    <div id="question-text"></div>
+    <img id="question-image" hidden alt="MCQ Image">
+    <div id="options"></div>
+    <div id="explanation" hidden></div>
+    <div id="nav-buttons">
+      <button id="prev-btn">Previous</button>
+      <button id="next-btn">Next</button>
+    </div>
+  </div>
+
+  <div id="summary" hidden></div>
+
+  <script>
+    const JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
+
+    let data = [];
+    let questions = [];
+    let currentIndex = 0;
+
+    const topicSelect      = document.getElementById('topic-select');
+    const subtopicSelect   = document.getElementById('subtopic-select');
+    const questionContainer= document.getElementById('question-container');
+    const progressEl       = document.getElementById('progress');
+    const questionText     = document.getElementById('question-text');
+    const questionImage    = document.getElementById('question-image');
+    const optionsDiv       = document.getElementById('options');
+    const explanationEl    = document.getElementById('explanation');
+    const prevBtn          = document.getElementById('prev-btn');
+    const nextBtn          = document.getElementById('next-btn');
+    const summaryEl        = document.getElementById('summary');
+
+    // Fetch MCQs
+    fetch(JSON_URL)
+      .then(res => res.json())
+      .then(json => {
+        data = json;
+        initTopics();
+      })
+      .catch(err => alert('Error loading MCQs: ' + err));
+
+    function initTopics() {
+      const topicSet = new Set(data.map(item => item.Topic));
+      topicSet.forEach(topic => {
+        const opt = document.createElement('option');
+        opt.value = topic;
+        opt.textContent = topic;
+        topicSelect.appendChild(opt);
+      });
+      topicSelect.disabled = false;
+    }
+
+    topicSelect.addEventListener('change', () => {
+      subtopicSelect.innerHTML = '<option value="">--Select Subtopic--</option>';
+      questionContainer.hidden = true;
+      summaryEl.hidden = true;
+      if (!topicSelect.value) {
+        subtopicSelect.disabled = true;
+        return;
+      }
+      const subs = data
+        .filter(item => item.Topic === topicSelect.value)
+        .map(item => item.Subtopic);
+      Array.from(new Set(subs)).forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subtopicSelect.appendChild(opt);
+      });
+      subtopicSelect.disabled = false;
+    });
+
+    subtopicSelect.addEventListener('change', () => {
+      if (!subtopicSelect.value) return;
+      questions = data.filter(item => item.Subtopic === subtopicSelect.value);
+      currentIndex = 0;
+      questions.forEach(q => q.wasCorrect = false);
+      renderQuestion();
+    });
+
+    function renderQuestion() {
+      const item = questions[currentIndex];
+      questionContainer.hidden = false;
+      summaryEl.hidden = true;
+
+      progressEl.textContent       = \`Question \${currentIndex+1} of \${questions.length}\`;
+      questionText.textContent     = item.Question;
+
+      // Dynamic Image Key Detection & Drive link conversion
+      let url = '';
+      const imageKey = Object.keys(item).find(k => /image/i.test(k));
+      if (imageKey && item[imageKey]) {
+        url = item[imageKey];
+        const gdMatch = url.match(/\/d\/([^\/]+)\//);
+        if (gdMatch) {
+          url = \`https://drive.google.com/uc?export=view&id=\${gdMatch[1]}\`;
+        }
+      }
+      if (url) {
+        questionImage.src     = url;
+        questionImage.hidden  = false;
+        questionImage.onerror = () => {
+          questionImage.hidden = true;
+          const link = document.createElement('a');
+          link.href    = url;
+          link.target  = '_blank';
+          link.textContent = 'Open Image in new tab';
+          link.style.display = 'block';
+          link.style.marginBottom = '1rem';
+          questionImage.insertAdjacentElement('afterend', link);
+        };
+      } else {
+        questionImage.hidden = true;
+      }
+
+      // Render options
+      optionsDiv.innerHTML  = '';
+      explanationEl.hidden  = true;
+      prevBtn.disabled      = currentIndex === 0;
+      nextBtn.disabled      = true;
+      const correctLabel    = item.Answer.startsWith('Option')
+                             ? item.Answer
+                             : \`Option \${item.Answer}\`;
+
+      ['Option A','Option B','Option C','Option D','Option E'].forEach(label => {
+        if (item[label]) {
+          const btn = document.createElement('button');
+          btn.textContent = item[label];
+          btn.className   = 'option';
+          btn.onclick     = () => selectOption(btn, item[label], item[correctLabel]);
+          optionsDiv.appendChild(btn);
+        }
+      });
+    }
+
+    function selectOption(btn, chosenText, correctText) {
+      Array.from(optionsDiv.children).forEach(el => el.disabled = true);
+      if (chosenText === correctText) {
+        btn.classList.add('correct');
+        questions[currentIndex].wasCorrect = true;
+      } else {
+        btn.classList.add('wrong');
+        Array.from(optionsDiv.children).forEach(el => {
+          if (el.textContent === correctText) el.classList.add('correct');
+        });
+      }
+      explanationEl.textContent = questions[currentIndex].Explanation || '';
+      explanationEl.hidden      = false;
+      nextBtn.disabled          = false;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderQuestion();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        const correctCount = questions.filter(q => q.wasCorrect).length;
+        questionContainer.hidden = true;
+        summaryEl.innerHTML = \`
+          <h2>Completed</h2>
+          <p>You answered <strong>\${correctCount}/\${questions.length}</strong> correctly.</p>\`;
+        summaryEl.hidden = false;
+      }
+    });
+  </script>
+</body>
+</html>
