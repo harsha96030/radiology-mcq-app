@@ -18,9 +18,27 @@
     #nav-buttons { margin-top: 1rem; }
     #summary { margin-top: 2rem; font-size: 1.1rem; }
   </style>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <h1>Radiology MCQ App</h1>
+  <script>
+    // Telegram WebApp compatibility stub
+    const ALLOWED_CHAT_ID = -1002401386615; // your channel ID
+    window.Telegram = window.Telegram || {};
+    window.Telegram.WebApp = window.Telegram.WebApp || {};
+    // In Telegram WebApp, initDataUnsafe is populated. For preview, stub it:
+    if (!Telegram.WebApp.initDataUnsafe) {
+      Telegram.WebApp.initDataUnsafe = { chat: { id: ALLOWED_CHAT_ID } };
+    }
+    const init = Telegram.WebApp.initDataUnsafe;
+    // Enforce channel-only
+    if (!init.chat || init.chat.id !== ALLOWED_CHAT_ID) {
+      document.body.innerHTML = '<h2>❌ Access Denied</h2>' +
+        '<p>This app only works inside the official channel.</p>';
+      throw new Error('Unauthorized');
+    }
+  </script>
 
   <label for="topic-select">Topic:</label><br>
   <select id="topic-select" disabled><option value="">--Select Topic--</option></select><br>
@@ -43,111 +61,86 @@
   <div id="summary" hidden></div>
 
   <script>
-    var JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
+    const JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
+    let data = [], questions = [], currentIndex = 0;
 
-    var data = [];
-    var questions = [];
-    var currentIndex = 0;
+    const topicSelect       = document.getElementById('topic-select');
+    const subtopicSelect    = document.getElementById('subtopic-select');
+    const questionContainer = document.getElementById('question-container');
+    const progressEl        = document.getElementById('progress');
+    const questionText      = document.getElementById('question-text');
+    const questionImage     = document.getElementById('question-image');
+    const optionsDiv        = document.getElementById('options');
+    const explanationEl     = document.getElementById('explanation');
+    const prevBtn           = document.getElementById('prev-btn');
+    const nextBtn           = document.getElementById('next-btn');
+    const summaryEl         = document.getElementById('summary');
 
-    var topicSelect       = document.getElementById('topic-select');
-    var subtopicSelect    = document.getElementById('subtopic-select');
-    var questionContainer = document.getElementById('question-container');
-    var progressEl        = document.getElementById('progress');
-    var questionText      = document.getElementById('question-text');
-    var questionImage     = document.getElementById('question-image');
-    var optionsDiv        = document.getElementById('options');
-    var explanationEl     = document.getElementById('explanation');
-    var prevBtn           = document.getElementById('prev-btn');
-    var nextBtn           = document.getElementById('next-btn');
-    var summaryEl         = document.getElementById('summary');
-
-    // Fetch MCQs
+    // Load questions
     fetch(JSON_URL)
-      .then(function(res) { return res.json(); })
-      .then(function(json) {
-        data = json;
-        initTopics();
-      })
-      .catch(function(err) { alert('Error loading MCQs: ' + err); });
+      .then(res => res.json())
+      .then(json => { data = json; initTopics(); })
+      .catch(err => alert('Error loading MCQs: ' + err));
 
     function initTopics() {
-      var topicSet = {};
-      data.forEach(function(item) { topicSet[item.Topic] = true; });
-      Object.keys(topicSet).forEach(function(topic) {
-        var opt = document.createElement('option');
-        opt.value = topic;
-        opt.textContent = topic;
-        topicSelect.appendChild(opt);
+      const topics = [...new Set(data.map(i => i.Topic))];
+      topics.forEach(t => {
+        const o = document.createElement('option'); o.value = t; o.textContent = t;
+        topicSelect.appendChild(o);
       });
       topicSelect.disabled = false;
     }
 
-    topicSelect.addEventListener('change', function() {
+    topicSelect.addEventListener('change', () => {
       subtopicSelect.innerHTML = '<option value="">--Select Subtopic--</option>';
       questionContainer.hidden = true;
       summaryEl.hidden = true;
-      if (!topicSelect.value) {
-        subtopicSelect.disabled = true;
-        return;
-      }
-      var subs = data.filter(function(item) {
-        return item.Topic === topicSelect.value;
-      }).map(function(item) {
-        return item.Subtopic;
-      });
-      var uniqueSubs = {};
-      subs.forEach(function(sub) { uniqueSubs[sub] = true; });
-      Object.keys(uniqueSubs).forEach(function(sub) {
-        var opt = document.createElement('option');
-        opt.value = sub;
-        opt.textContent = sub;
-        subtopicSelect.appendChild(opt);
+      if (!topicSelect.value) return subtopicSelect.disabled = true;
+      const subs = [...new Set(
+        data.filter(i => i.Topic === topicSelect.value).map(i => i.Subtopic)
+      )];
+      subs.forEach(s => {
+        const o = document.createElement('option'); o.value = s; o.textContent = s;
+        subtopicSelect.appendChild(o);
       });
       subtopicSelect.disabled = false;
     });
 
-    subtopicSelect.addEventListener('change', function() {
+    subtopicSelect.addEventListener('change', () => {
       if (!subtopicSelect.value) return;
-      questions = data.filter(function(item) {
-        return item.Subtopic === subtopicSelect.value;
-      });
-      currentIndex = 0;
-      questions.forEach(function(q) { q.wasCorrect = false; });
+      questions = data.filter(i => i.Subtopic === subtopicSelect.value);
+      currentIndex = 0; questions.forEach(q => q.wasCorrect = false);
       renderQuestion();
     });
 
     function renderQuestion() {
-      var item = questions[currentIndex];
+      const item = questions[currentIndex];
       questionContainer.hidden = false;
       summaryEl.hidden = true;
 
-      progressEl.textContent   = 'Question ' + (currentIndex+1) + ' of ' + questions.length;
+      progressEl.textContent = 'Question ' + (currentIndex+1) + ' of ' + questions.length;
       questionText.textContent = item.Question;
 
-      // Image detection and conversion
-      var url = '';
-      for (var key in item) {
-        if (/image/i.test(key) && item[key]) {
-          url = item[key];
-          var match = url.match(/\/d\/([^\/]+)\//);
-          if (match) {
-            url = 'https://drive.google.com/uc?export=view&id=' + match[1];
-          }
+      // Handle image URLs
+      let url = '';
+      for (let k in item) {
+        if (/image/i.test(k) && item[k]) {
+          url = item[k];
+          const m = url.match(/\/d\/([^\/]+)\//);
+          if (m) url = `https://drive.google.com/uc?export=view&id=${m[1]}`;
           break;
         }
       }
       if (url) {
         questionImage.src = url;
         questionImage.hidden = false;
-        questionImage.onerror = function() {
+        questionImage.onerror = () => {
           questionImage.hidden = true;
-          var link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.textContent = 'Open Image in new tab';
+          const link = document.createElement('a');
+          link.href = url; link.target = '_blank';
+          link.textContent = 'Open image';
           link.style.display = 'block';
-          link.style.marginBottom = '1rem';
-          questionImage.parentNode.insertBefore(link, questionImage.nextSibling);
+          questionImage.after(link);
         };
       } else {
         questionImage.hidden = true;
@@ -156,30 +149,29 @@
       // Render options
       optionsDiv.innerHTML = '';
       explanationEl.hidden = true;
-      prevBtn.disabled = (currentIndex === 0);
+      prevBtn.disabled = currentIndex === 0;
       nextBtn.disabled = true;
-      var correctLabel = item.Answer.charAt(0).toUpperCase() === 'O' ? item.Answer : 'Option ' + item.Answer;
+      const key = item.Answer.startsWith('Option') ? item.Answer : 'Option ' + item.Answer;
 
-      ['Option A','Option B','Option C','Option D','Option E'].forEach(function(label) {
+      ['Option A','Option B','Option C','Option D','Option E'].forEach(label => {
         if (item[label]) {
-          var btn = document.createElement('button');
-          btn.textContent = item[label];
-          btn.className = 'option';
-          btn.onclick = function() { selectOption(btn, item[label], item[correctLabel]); };
+          const btn = document.createElement('button');
+          btn.textContent = item[label]; btn.className = 'option';
+          btn.onclick = () => selectOption(btn, item[label], item[key]);
           optionsDiv.appendChild(btn);
         }
       });
     }
 
-    function selectOption(btn, chosenText, correctText) {
-      Array.prototype.forEach.call(optionsDiv.children, function(el) { el.disabled = true; });
-      if (chosenText === correctText) {
+    function selectOption(btn, chosen, correct) {
+      Array.from(optionsDiv.children).forEach(e => e.disabled = true);
+      if (chosen === correct) {
         btn.classList.add('correct');
         questions[currentIndex].wasCorrect = true;
       } else {
         btn.classList.add('wrong');
-        Array.prototype.forEach.call(optionsDiv.children, function(el) {
-          if (el.textContent === correctText) el.classList.add('correct');
+        Array.from(optionsDiv.children).forEach(e => {
+          if (e.textContent === correct) e.classList.add('correct');
         });
       }
       explanationEl.textContent = questions[currentIndex].Explanation || '';
@@ -187,26 +179,21 @@
       nextBtn.disabled = false;
     }
 
-    prevBtn.addEventListener('click', function() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderQuestion();
-      }
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) currentIndex--;
+      renderQuestion();
     });
-
-    nextBtn.addEventListener('click', function() {
+    nextBtn.addEventListener('click', () => {
       if (currentIndex < questions.length - 1) {
-        currentIndex++;
-        renderQuestion();
+        currentIndex++; renderQuestion();
       } else {
-        var correctCount = questions.filter(function(q) { return q.wasCorrect; }).length;
+        const count = questions.filter(q => q.wasCorrect).length;
         questionContainer.hidden = true;
         summaryEl.innerHTML = '<h2>Completed</h2>' +
-                              '<p>You answered <strong>' + correctCount + '/' + questions.length + '</strong> correctly.</p>';
+          '<p>You answered <strong>' + count + '/' + questions.length + '</strong> correctly.</p>';
         summaryEl.hidden = false;
       }
     });
   </script>
 </body>
 </html>
-
