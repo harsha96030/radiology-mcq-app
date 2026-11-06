@@ -1,406 +1,1025 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Radiology MCQ App</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: #f4f7fa;
-      color: #333;
-    }
-    #loading {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-                  url('https://images.unsplash.com/photo-1581093588401-710dd9cff141?auto=format&fit=crop&w=800&q=80');
-      background-size: cover;
-      background-position: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      color: #fff;
-      text-shadow: 0 0 8px rgba(0,0,0,0.8);
-      z-index: 1000;
-    }
-    #loading h1 {
-      font-size: 3rem;
-      margin: 0;
-      font-weight: 700;
-    }
-    #loading p {
-      font-size: 1.5rem;
-      margin-top: 1rem;
-      font-weight: 400;
-    }
-    #app-content {
-      display: none;
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-      border-radius: 8px;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
-    }
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 1rem;
-    }
-    label {
-      font-weight: 500;
-      color: #34495e;
-    }
-    select {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fafafa;
-      transition: border-color 0.3s;
-    }
-    select:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-    #question-container {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #ecf0f1;
-      border-radius: 6px;
-    }
-    #progress {
-      font-weight: 500;
-      color: #2980b9;
-      margin-bottom: 0.75rem;
-    }
-    #question-text {
-      font-size: 1.3rem;
-      margin-bottom: 0.75rem;
-      color: #2c3e50;
-    }
-    #question-image {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 0.75rem;
-      border: 1px solid #bdc3c7;
-      border-radius: 4px;
-    }
-    .option {
-      display: block;
-      margin: 0.5rem 0;
-      padding: 0.75rem;
-      border: 2px solid #3498db;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #fff;
-      font-weight: 500;
-      transition: background 0.3s, transform 0.2s;
-    }
-    .option:hover {
-      background: #f1f8ff;
-      transform: translateY(-2px);
-    }
-    .option.correct {
-      background-color: #2ecc71;
-      border-color: #27ae60;
-      color: #fff;
-    }
-    .option.wrong {
-      background-color: #e74c3c;
-      border-color: #c0392b;
-      color: #fff;
-    }
-    #explanation {
-      margin-top: 1rem;
-      font-style: italic;
-      color: #7f8c8d;
-    }
-    #nav-buttons {
-      margin-top: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-    }
-    button {
-      padding: 0.7rem 1.2rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    #prev-btn {
-      background: #bdc3c7;
-      color: #2c3e50;
-      transition: background 0.3s;
-    }
-    #prev-btn:hover { background: #aab7b8; }
-    #next-btn {
-      background: #3498db;
-      color: #fff;
-      transition: background 0.3s;
-    }
-    #next-btn:hover { background: #2980b9; }
-    #summary {
-      margin-top: 2rem;
-      font-size: 1.2rem;
-      text-align: center;
-      color: #16a085;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10243a">
+<title>Radiology MCQ | NEET SS, INI-SS & FRCR</title>
+
+<!-- GOOGLE ANALYTICS -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-L942DQKC88"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-L942DQKC88');
+
+function trackEvent(name, params) {
+  if (typeof gtag === 'function') {
+    gtag('event', name, params || {});
+  }
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --navy:#10243a;
+  --teal:#12a89d;
+  --bg:#f3f7fa;
+  --text:#1c2d3d;
+  --muted:#718096;
+  --border:#dce6ed;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,sans-serif;
+}
+button,select { font:inherit; }
+
+header {
+  background:linear-gradient(120deg,#10243a,#183b55);
+  color:white;
+  padding:20px;
+}
+.header-inner {
+  max-width:1000px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brand-icon {
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  background:#ffffff20;
+  font-size:23px;
+}
+.brand-title { font-weight:800; }
+.brand-tag { font-size:11px; color:#c6d6e3; margin-top:4px; }
+.free-pill {
+  padding:8px 12px;
+  border:1px solid #ffffff55;
+  border-radius:25px;
+  font-size:11px;
+  font-weight:800;
+}
+main {
+  max-width:1000px;
+  width:calc(100% - 28px);
+  margin:28px auto 40px;
+}
+.hero {
+  padding:clamp(28px,6vw,58px);
+  color:white;
+  border-radius:22px;
+  background:linear-gradient(125deg,#12304a,#15536a,#0c8d86);
+  box-shadow:0 15px 35px #10243a20;
+}
+.eyebrow {
+  color:#c7fff4;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1px;
+}
+.hero h1 {
+  font-size:clamp(29px,6vw,48px);
+  line-height:1.15;
+  margin:18px 0 12px;
+}
+.hero p {
+  max-width:650px;
+  color:#d4e5ed;
+  font-size:15px;
+  line-height:1.7;
+}
+.exam-tags {
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:20px;
+}
+.exam-tags span {
+  padding:8px 12px;
+  background:#ffffff20;
+  border:1px solid #ffffff35;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+}
+.primary-btn {
+  margin-top:25px;
+  padding:14px 20px;
+  border:0;
+  border-radius:10px;
+  background:white;
+  color:var(--navy);
+  font-weight:800;
+  cursor:pointer;
+}
+.section-title {
+  margin:30px 0 14px;
+  color:var(--navy);
+  font-size:18px;
+}
+.feature-grid {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+.feature-card,.social-card {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:18px;
+}
+.feature-icon {
+  font-size:24px;
+  margin-bottom:12px;
+}
+.feature-card h3,.social-card h3 {
+  margin:0 0 7px;
+  color:var(--navy);
+  font-size:14px;
+}
+.feature-card p,.social-card p {
+  margin:0;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+.social-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.social-card {
+  display:flex;
+  align-items:center;
+  gap:13px;
+  text-decoration:none;
+}
+.social-icon {
+  width:44px;
+  height:44px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  color:white;
+  font-size:20px;
+  font-weight:bold;
+}
+.insta { background:linear-gradient(135deg,#7b35c8,#e13b78,#f49a39); }
+.telegram { background:#229ed9; }
+.social-copy { flex:1; }
+.social-arrow { color:var(--teal); }
+.small-note {
+  text-align:center;
+  color:#8998a5;
+  font-size:11px;
+  margin-top:25px;
+}
+
+/* MCQ PAGE */
+#practice-view { display:none; }
+.practice-panel {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:17px;
+  padding:clamp(17px,4vw,28px);
+  box-shadow:0 10px 30px #10243a12;
+}
+.practice-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:20px;
+}
+.practice-top h1 {
+  margin:0;
+  font-size:21px;
+  color:var(--navy);
+}
+.text-btn {
+  border:1px solid var(--border);
+  background:#f7fafc;
+  color:#42576a;
+  border-radius:9px;
+  padding:9px 12px;
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+}
+.selectors {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.field label {
+  display:block;
+  margin-bottom:8px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+select {
+  width:100%;
+  min-height:47px;
+  padding:0 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fbfdfe;
+  color:var(--text);
+}
+select:disabled { opacity:.55; }
+#status {
+  margin-top:13px;
+  color:var(--muted);
+  font-size:12px;
+}
+#question-container { margin-top:22px; }
+.quiz-head {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+#progress {
+  color:#087f78;
+  font-size:12px;
+  font-weight:800;
+}
+#question-count {
+  color:var(--muted);
+  font-size:11px;
+}
+.progress-track {
+  height:7px;
+  background:#e8eef2;
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:18px;
+}
+#progress-fill {
+  height:100%;
+  width:0;
+  background:var(--teal);
+  transition:width .2s;
+}
+.question-card {
+  padding:clamp(15px,3vw,22px);
+  background:#f8fbfc;
+  border:1px solid var(--border);
+  border-radius:14px;
+}
+#question-text {
+  color:var(--navy);
+  font-size:clamp(16px,2.5vw,19px);
+  font-weight:700;
+  line-height:1.65;
+  white-space:pre-wrap;
+}
+#question-image {
+  display:block;
+  max-width:100%;
+  max-height:420px;
+  height:auto;
+  margin:15px auto 0;
+  border-radius:10px;
+}
+#options {
+  display:grid;
+  gap:9px;
+  margin-top:17px;
+}
+.option {
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  width:100%;
+  text-align:left;
+  padding:12px;
+  border:1.5px solid var(--border);
+  border-radius:11px;
+  background:white;
+  color:var(--text);
+  font-size:13px;
+  line-height:1.5;
+  cursor:pointer;
+}
+.option:hover:not(:disabled) {
+  border-color:var(--teal);
+  background:#f2fbfa;
+}
+.option:disabled { opacity:1; }
+.option-letter {
+  flex:0 0 26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:#edf2f6;
+  font-size:11px;
+  font-weight:800;
+}
+.option.correct {
+  background:#e8f7ef;
+  border-color:#55b985;
+  color:#126b43;
+}
+.option.wrong {
+  background:#fff0f1;
+  border-color:#e58b94;
+  color:#a52d3b;
+}
+#explanation {
+  margin-top:14px;
+  padding:14px;
+  border-radius:11px;
+  background:#eef8f7;
+  border:1px solid #ccebe7;
+  color:#285b59;
+  font-size:13px;
+  line-height:1.65;
+  white-space:pre-wrap;
+}
+.explanation-title {
+  display:block;
+  color:#087f78;
+  font-weight:800;
+  margin-bottom:5px;
+}
+#nav-buttons {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:16px;
+}
+.nav-btn {
+  min-height:43px;
+  padding:0 17px;
+  border:0;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+#prev-btn { background:#e9eff3; color:#42576a; }
+#next-btn {
+  margin-left:auto;
+  background:var(--teal);
+  color:white;
+}
+.nav-btn:disabled { opacity:.45; cursor:not-allowed; }
+#summary {
+  margin-top:20px;
+  padding:22px;
+  border-radius:13px;
+  text-align:center;
+  background:#eff9f6;
+}
+#summary h2 { color:var(--navy); }
+#summary p { color:#426457; font-size:13px; }
+.score {
+  color:#168653;
+  font-size:30px;
+  font-weight:800;
+}
+[hidden] { display:none!important; }
+
+@media(max-width:680px) {
+  main { width:calc(100% - 20px); margin-top:17px; }
+  .feature-grid,.social-grid,.selectors { grid-template-columns:1fr; }
+  .feature-card { display:flex; align-items:center; gap:13px; }
+  .feature-icon { margin:0; }
+  .hero { border-radius:17px; }
+  .nav-btn { flex:1; }
+  #next-btn { margin-left:0; }
+}
+</style>
 </head>
+
 <body>
-  <div id="loading">
-    <h1>Radiology MCQs Now Free for You</h1>
-    <p>Content is loading, please wait...</p>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">✚</div>
+      <div>
+        <div class="brand-title">RADIOLOGY MCQ</div>
+        <div class="brand-tag">A learning platform for radiology students</div>
+      </div>
+    </div>
+    <span class="free-pill">100% FREE</span>
+  </div>
+</header>
+
+<main>
+
+<!-- HOME PAGE -->
+<section id="home-view">
+
+  <div class="hero">
+    <span class="eyebrow">FREE RADIOLOGY MCQ PLATFORM</span>
+
+    <h1>Prepare smarter.<br>Practice with purpose.</h1>
+
+    <p>
+      A free Radiology MCQ app specially designed for
+      NEET SS, INI-SS and FRCR students.
+      Strengthen your concepts with topic-wise practice
+      and learn at your own pace.
+    </p>
+
+    <div class="exam-tags">
+      <span>NEET SS</span>
+      <span>INI-SS</span>
+      <span>FRCR</span>
+    </div>
+
+    <button class="primary-btn" id="start-practice-btn">
+      Start topic-wise MCQs →
+    </button>
   </div>
 
-  <div id="app-content">
-    <h1>Radiology MCQ App</h1>
-    <label for="topic-select">Topic:</label><br>
-    <select id="topic-select" disabled>
-      <option value="">--Select Topic--</option>
-    </select><br>
+  <h2 class="section-title">What you can do here</h2>
 
-    <label for="subtopic-select">Subtopic:</label><br>
-    <select id="subtopic-select" disabled>
-      <option value="">--Select Subtopic--</option>
-    </select>
-
-    <div id="question-container" hidden>
-      <div id="progress"></div>
-      <div id="question-text"></div>
-      <img id="question-image" hidden alt="MCQ Image">
-      <div id="options"></div>
-      <div id="explanation" hidden></div>
-      <div id="nav-buttons">
-        <button id="prev-btn">Previous</button>
-        <button id="next-btn">Next</button>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <div>
+        <h3>Topic-wise MCQs</h3>
+        <p>Choose a subject and focus on individual subtopics.</p>
       </div>
     </div>
 
-    <div id="summary" hidden></div>
+    <div class="feature-card">
+      <div class="feature-icon">✓</div>
+      <div>
+        <h3>Instant answer review</h3>
+        <p>Check your answer and read explanations after each attempt.</p>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div>
+        <h3>Practice score</h3>
+        <p>Review your score at the end of each session.</p>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Show loading screen for 6 seconds, then display app content
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('app-content').style.display = 'block';
-        startApp();
-      }, 6000);
-    });
+  <h2 class="section-title">Stay connected</h2>
 
-    const JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
-    let data = [], questions = [], currentIndex = 0;
+  <div class="social-grid">
 
-    // Sample fallback data for preview or fetch failure
-    const sampleData = [
-      {
-        Topic: 'Demo Topic',
-        Subtopic: 'Demo Subtopic',
-        Question: 'Demo question?',
-        'Image URL': '',
-        'Option A': 'A',
-        'Option B': 'B',
-        'Option C': 'C',
-        'Option D': '',
-        'Option E': '',
-        Answer: 'Option A',
-        Explanation: 'Demo explanation.'
+    <a class="social-card"
+       href="https://www.instagram.com/radiology_inshorts/"
+       target="_blank" rel="noopener noreferrer"
+       id="instagram-link">
+      <div class="social-icon insta">◎</div>
+      <div class="social-copy">
+        <h3>Follow us on Instagram</h3>
+        <p>Radiology Inshorts · Cases and learning content</p>
+      </div>
+      <span class="social-arrow">↗</span>
+    </a>
+
+    <a class="social-card"
+       href="https://t.me/radioinissneetss"
+       target="_blank" rel="noopener noreferrer"
+       id="telegram-link">
+      <div class="social-icon telegram">➤</div>
+      <div class="social-copy">
+        <h3>Join our Telegram</h3>
+        <p>Radiology learning community and updates</p>
+      </div>
+      <span class="social-arrow">↗</span>
+    </a>
+
+  </div>
+
+  <p class="small-note">
+    Free educational resource for radiology learners.
+    Keep learning, keep practising.
+  </p>
+
+</section>
+
+<!-- MCQ PRACTICE PAGE -->
+<section id="practice-view">
+
+  <div class="practice-panel">
+
+    <div class="practice-top">
+      <h1>Topic-wise MCQs</h1>
+      <button class="text-btn" id="home-btn">← Home</button>
+    </div>
+
+    <div class="selectors">
+      <div class="field">
+        <label for="topic-select">Choose topic</label>
+        <select id="topic-select" disabled>
+          <option value="">Loading topics...</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="subtopic-select">Choose subtopic</label>
+        <select id="subtopic-select" disabled>
+          <option value="">Select a topic first</option>
+        </select>
+      </div>
+    </div>
+
+    <p id="status" role="status">
+      Preparing your question bank in the background...
+    </p>
+
+    <div id="question-container" hidden>
+
+      <div class="quiz-head">
+        <div id="progress"></div>
+        <div id="question-count"></div>
+      </div>
+
+      <div class="progress-track">
+        <div id="progress-fill"></div>
+      </div>
+
+      <div class="question-card">
+        <div id="question-text"></div>
+        <img id="question-image" hidden alt="Question image">
+        <div id="options"></div>
+
+        <div id="explanation" hidden>
+          <span class="explanation-title">Explanation</span>
+          <span id="explanation-text"></span>
+        </div>
+      </div>
+
+      <div id="nav-buttons">
+        <button id="prev-btn" class="nav-btn">← Previous</button>
+        <button id="next-btn" class="nav-btn" disabled>Next →</button>
+      </div>
+
+    </div>
+
+    <div id="summary" hidden></div>
+
+  </div>
+</section>
+
+</main>
+
+<script>
+const JSON_URL = 'https://script.google.com/macros/s/AKfycbxgz2MzjW8B7vtbEXXLUJSVFMyFzG_Du13s49SliUrDfsur3vafKH7_XyK74eaGuy2J/exec';
+
+let data = [];
+let questions = [];
+let currentIndex = 0;
+let selectedTopic = '';
+let dataLoaded = false;
+let loadFailed = false;
+
+const homeView = document.getElementById('home-view');
+const practiceView = document.getElementById('practice-view');
+const topicSelect = document.getElementById('topic-select');
+const subtopicSelect = document.getElementById('subtopic-select');
+const questionContainer = document.getElementById('question-container');
+const progressEl = document.getElementById('progress');
+const questionCountEl = document.getElementById('question-count');
+const progressFill = document.getElementById('progress-fill');
+const questionText = document.getElementById('question-text');
+const questionImage = document.getElementById('question-image');
+const optionsDiv = document.getElementById('options');
+const explanationEl = document.getElementById('explanation');
+const explanationText = document.getElementById('explanation-text');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const summaryEl = document.getElementById('summary');
+const statusEl = document.getElementById('status');
+
+function openPractice() {
+  homeView.style.display = 'none';
+  practiceView.style.display = 'block';
+
+  trackEvent('practice_page_opened');
+
+  if (dataLoaded) {
+    statusEl.textContent =
+      data.length + ' questions available. Select a topic to begin.';
+  } else {
+    statusEl.textContent =
+      'Loading question bank... Please wait.';
+  }
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openHome() {
+  practiceView.style.display = 'none';
+  homeView.style.display = 'block';
+  questionContainer.hidden = true;
+  summaryEl.hidden = true;
+
+  trackEvent('home_page_opened');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('start-practice-btn')
+  .addEventListener('click',openPractice);
+
+document.getElementById('home-btn')
+  .addEventListener('click',openHome);
+
+document.getElementById('instagram-link')
+  .addEventListener('click',() =>
+    trackEvent('social_link_click',{platform:'instagram'}));
+
+document.getElementById('telegram-link')
+  .addEventListener('click',() =>
+    trackEvent('social_link_click',{platform:'telegram'}));
+
+/* LOAD QUESTIONS IN BACKGROUND */
+function loadQuestionBank() {
+  fetch(JSON_URL)
+    .then(response => {
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return response.json();
+    })
+    .then(json => {
+      if (!Array.isArray(json)) {
+        throw new Error('Unexpected question bank format');
       }
-    ];
 
-    const topicSelect = document.getElementById('topic-select');
-    const subtopicSelect = document.getElementById('subtopic-select');
-    const questionContainer = document.getElementById('question-container');
-    const progressEl = document.getElementById('progress');
-    const questionText = document.getElementById('question-text');
-    const questionImage = document.getElementById('question-image');
-    const optionsDiv = document.getElementById('options');
-    const explanationEl = document.getElementById('explanation');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const summaryEl = document.getElementById('summary');
+      data = json;
+      dataLoaded = true;
+      initTopics();
 
-    function startApp() {
-      fetch(JSON_URL)
-        .then(res => res.json())
-        .then(json => {
-          data = json;
-          initTopics();
-        })
-        .catch(err => {
-          // If fetch fails, use fallback data to avoid errors
-          data = sampleData;
-          initTopics();
-        });
-    }
+      statusEl.textContent =
+        data.length + ' questions available. Select a topic to begin.';
 
-    function initTopics() {
-      const topics = [...new Set(data.map(i => i.Topic))];
-      topics.forEach(t => {
-        const o = document.createElement('option');
-        o.value = t;
-        o.textContent = t;
-        topicSelect.appendChild(o);
+      trackEvent('question_bank_loaded',{
+        question_count:data.length
       });
-      topicSelect.disabled = false;
-    }
+    })
+    .catch(error => {
+      console.error('Question bank loading failed:',error);
+      loadFailed = true;
 
-    topicSelect.addEventListener('change', () => {
-      // Clear any existing subtopic options
-      subtopicSelect.innerHTML = '<option value="">--Select Subtopic--</option>';
-      questionContainer.hidden = true;
-      summaryEl.hidden = true;
+      statusEl.textContent =
+        'Question bank could not be loaded. Check your connection and retry.';
 
-      if (!topicSelect.value) {
-        subtopicSelect.disabled = true;
-        return;
-      }
-      // Populate subtopics for the selected topic
-      const subs = [...new Set(
-        data
-          .filter(item => item.Topic === topicSelect.value)
-          .map(item => item.Subtopic)
-      )];
-      subs.forEach(s => {
-        const o = document.createElement('option');
-        o.value = s;
-        o.textContent = s;
-        subtopicSelect.appendChild(o);
+      addRetryButton();
+
+      trackEvent('question_bank_load_error',{
+        error_message:String(error.message || error).slice(0,100)
       });
-      subtopicSelect.disabled = false;
     });
+}
 
-    subtopicSelect.addEventListener('change', () => {
-      if (!subtopicSelect.value) return;
-      questions = data.filter(item => item.Subtopic === subtopicSelect.value);
-      currentIndex = 0;
-      questions.forEach(q => q.wasCorrect = false);
-      renderQuestion();
-    });
+function addRetryButton() {
+  if (document.getElementById('retry-load-btn')) return;
 
-    function renderQuestion() {
-      const item = questions[currentIndex];
-      questionContainer.hidden = false;
-      summaryEl.hidden = true;
+  const button = document.createElement('button');
+  button.id = 'retry-load-btn';
+  button.className = 'text-btn';
+  button.textContent = 'Retry loading questions';
+  button.style.marginTop = '10px';
 
-      // Update progress text
-      progressEl.textContent = 'Question ' + (currentIndex + 1) + ' of ' + questions.length;
-      questionText.textContent = item.Question;
+  button.addEventListener('click',() => {
+    button.remove();
+    loadFailed = false;
+    statusEl.textContent = 'Trying to connect...';
+    loadQuestionBank();
+  });
 
-      // ======= IMAGE HANDLING WITH LINK-CLEANUP =======
-      // Remove any previously appended <a> fallback link
-      const nextElem = questionImage.nextElementSibling;
-      if (nextElem && nextElem.tagName === 'A') {
-        nextElem.remove();
+  statusEl.after(button);
+}
+
+function initTopics() {
+  topicSelect.innerHTML =
+    '<option value="">-- Select topic --</option>';
+
+  const topics = [
+    ...new Set(data.map(item => item.Topic).filter(Boolean))
+  ].sort();
+
+  topics.forEach(topic => {
+    const option = document.createElement('option');
+    option.value = topic;
+    option.textContent = topic;
+    topicSelect.appendChild(option);
+  });
+
+  topicSelect.disabled = topics.length === 0;
+
+  if (!topics.length) {
+    statusEl.textContent = 'No questions found in the question bank.';
+  }
+
+  const retry = document.getElementById('retry-load-btn');
+  if (retry) retry.remove();
+}
+
+/* TOPIC SELECTION */
+topicSelect.addEventListener('change',() => {
+  selectedTopic = topicSelect.value;
+
+  subtopicSelect.innerHTML =
+    '<option value="">-- Select subtopic --</option>';
+
+  questionContainer.hidden = true;
+  summaryEl.hidden = true;
+
+  if (!selectedTopic) {
+    subtopicSelect.disabled = true;
+    return;
+  }
+
+  const subs = [
+    ...new Set(
+      data.filter(item => item.Topic === selectedTopic)
+        .map(item => item.Subtopic)
+        .filter(Boolean)
+    )
+  ].sort();
+
+  subs.forEach(sub => {
+    const option = document.createElement('option');
+    option.value = sub;
+    option.textContent = sub;
+    subtopicSelect.appendChild(option);
+  });
+
+  subtopicSelect.disabled = subs.length === 0;
+  statusEl.textContent = subs.length + ' subtopics available.';
+
+  trackEvent('topic_selected',{topic:selectedTopic});
+});
+
+/* SUBTOPIC SELECTION */
+subtopicSelect.addEventListener('change',() => {
+  if (!subtopicSelect.value) return;
+
+  questions = data
+    .filter(item =>
+      item.Topic === selectedTopic &&
+      item.Subtopic === subtopicSelect.value
+    )
+    .map(item => ({
+      ...item,
+      wasCorrect:false,
+      answered:false,
+      chosenAnswer:null
+    }));
+
+  currentIndex = 0;
+  summaryEl.hidden = true;
+
+  statusEl.textContent =
+    questions.length + ' questions in this practice session.';
+
+  trackEvent('subtopic_selected',{
+    topic:selectedTopic,
+    subtopic:subtopicSelect.value,
+    question_count:questions.length
+  });
+
+  if (questions.length) renderQuestion();
+});
+
+/* CORRECT ANSWER HANDLING */
+function correctAnswerText(item) {
+  const answer = String(item.Answer || '').trim();
+
+  if (/^option\s*[a-e]$/i.test(answer)) {
+    return item['Option ' + answer.slice(-1).toUpperCase()];
+  }
+
+  if (/^[a-e]$/i.test(answer)) {
+    return item['Option ' + answer.toUpperCase()];
+  }
+
+  return answer;
+}
+
+/* DISPLAY QUESTION */
+function renderQuestion() {
+  const item = questions[currentIndex];
+  if (!item) return;
+
+  questionContainer.hidden = false;
+  summaryEl.hidden = true;
+
+  progressEl.textContent = 'QUESTION ' + (currentIndex + 1);
+  questionCountEl.textContent = 'OF ' + questions.length;
+
+  progressFill.style.width =
+    ((currentIndex + 1) / questions.length * 100) + '%';
+
+  questionText.textContent = item.Question || '';
+
+  const oldLink = questionImage.nextElementSibling;
+
+  if (oldLink && oldLink.dataset &&
+      oldLink.dataset.imageFallback === 'true') {
+    oldLink.remove();
+  }
+
+  questionImage.onerror = null;
+  questionImage.removeAttribute('src');
+
+  let imageUrl = '';
+
+  for (const key in item) {
+    if (/image/i.test(key) && item[key]) {
+      imageUrl = String(item[key]).trim();
+
+      const match = imageUrl.match(/\/d\/([^\/]+)\//);
+
+      if (match) {
+        imageUrl =
+          'https://drive.google.com/uc?export=view&id=' + match[1];
+      }
+      break;
+    }
+  }
+
+  if (imageUrl) {
+    questionImage.src = imageUrl;
+    questionImage.hidden = false;
+
+    questionImage.onerror = () => {
+      questionImage.hidden = true;
+
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = 'Open question image';
+      link.dataset.imageFallback = 'true';
+
+      questionImage.after(link);
+    };
+  } else {
+    questionImage.hidden = true;
+  }
+
+  optionsDiv.innerHTML = '';
+
+  const answer = correctAnswerText(item);
+
+  ['A','B','C','D','E'].forEach(letter => {
+    const value = item['Option ' + letter];
+
+    if (value === undefined || value === null ||
+        String(value).trim() === '') return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'option';
+    button.disabled = item.answered;
+
+    const badge = document.createElement('span');
+    badge.className = 'option-letter';
+    badge.textContent = letter;
+
+    const text = document.createElement('span');
+    text.textContent = value;
+
+    button.append(badge,text);
+
+    if (item.answered) {
+      if (String(value).trim() === String(answer).trim()) {
+        button.classList.add('correct');
       }
 
-      // Find the image URL field (any column name containing "image")
-      let url = '';
-      for (let key in item) {
-        if (/image/i.test(key) && item[key]) {
-          url = item[key];
-          // Convert Google Drive "/d/{ID}/" URLs to direct-view links
-          const match = url.match(/\/d\/([^\/]+)\//);
-          if (match) {
-            url = `https://drive.google.com/uc?export=view&id=${match[1]}`;
-          }
-          break;
-        }
+      if (letter === item.chosenAnswer && !item.wasCorrect) {
+        button.classList.add('wrong');
       }
-
-      if (url) {
-        // Show <img> and set its src
-        questionImage.src = url;
-        questionImage.hidden = false;
-        questionImage.onerror = () => {
-          // On error, hide <img> and show a clickable <a> link
-          questionImage.hidden = true;
-          const link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.textContent = 'Open image';
-          link.style.display = 'block';
-          link.style.marginBottom = '0.75rem';
-          questionImage.after(link);
-        };
-      } else {
-        // No URL → hide <img> entirely
-        questionImage.hidden = true;
-      }
-
-      // ======= RENDER OPTIONS =======
-      optionsDiv.innerHTML = '';
-      explanationEl.hidden = true;
-      prevBtn.disabled = (currentIndex === 0);
-      nextBtn.disabled = true;
-
-      // Determine the property name of the correct answer
-      const answerKey = item.Answer.startsWith('Option') 
-        ? item.Answer 
-        : 'Option ' + item.Answer;
-
-      // Loop through Option A–E
-      ['Option A', 'Option B', 'Option C', 'Option D', 'Option E']
-        .forEach(label => {
-          if (item[label]) {
-            const btn = document.createElement('button');
-            btn.textContent = item[label];
-            btn.className = 'option';
-            btn.onclick = () => selectOption(btn, item[label], item[answerKey]);
-            optionsDiv.appendChild(btn);
-          }
-        });
+    } else {
+      button.addEventListener('click',() =>
+        selectOption(letter,String(value),answer));
     }
 
-    function selectOption(btn, chosen, correct) {
-      Array.from(optionsDiv.children).forEach(e => e.disabled = true);
-      if (chosen === correct) {
-        btn.classList.add('correct');
-        questions[currentIndex].wasCorrect = true;
-      } else {
-        btn.classList.add('wrong');
-        Array.from(optionsDiv.children).forEach(e => {
-          if (e.textContent === correct) e.classList.add('correct');
-        });
-      }
-      explanationEl.textContent = questions[currentIndex].Explanation || '';
-      explanationEl.hidden = false;
-      nextBtn.disabled = false;
-    }
+    optionsDiv.appendChild(button);
+  });
 
-    prevBtn.addEventListener('click', () => {
-      if (currentIndex > 0) {
-        currentIndex--;
-        renderQuestion();
-      }
-    });
-    nextBtn.addEventListener('click', () => {
-      if (currentIndex < questions.length - 1) {
-        currentIndex++;
-        renderQuestion();
-      } else {
-        const correctCount = questions.filter(q => q.wasCorrect).length;
-        questionContainer.hidden = true;
-        summaryEl.innerHTML = `
-          <h2>Completed</h2>
-          <p>You answered <strong>${correctCount}/${questions.length}</strong> correctly.</p>
-        `;
-        summaryEl.hidden = false;
-      }
-    });
-  </script>
+  explanationText.textContent =
+    item.Explanation || 'No explanation provided.';
+
+  explanationEl.hidden = !item.answered;
+
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = !item.answered;
+
+  nextBtn.textContent =
+    currentIndex === questions.length - 1
+      ? 'View results →'
+      : 'Next →';
+}
+
+/* ANSWER SELECTION */
+function selectOption(letter,chosen,correct) {
+  const item = questions[currentIndex];
+
+  if (!item || item.answered) return;
+
+  item.answered = true;
+  item.chosenAnswer = letter;
+
+  item.wasCorrect =
+    String(chosen).trim() === String(correct).trim();
+
+  trackEvent('answer_selected',{
+    topic:selectedTopic,
+    subtopic:subtopicSelect.value,
+    question_number:currentIndex + 1,
+    selected_option:letter,
+    is_correct:item.wasCorrect
+  });
+
+  trackEvent('explanation_viewed',{
+    topic:selectedTopic,
+    subtopic:subtopicSelect.value
+  });
+
+  renderQuestion();
+}
+
+/* PREVIOUS AND NEXT */
+prevBtn.addEventListener('click',() => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener('click',() => {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  } else {
+    showSummary();
+  }
+});
+
+/* FINAL SCORE */
+function showSummary() {
+  const correct =
+    questions.filter(q => q.wasCorrect).length;
+
+  const attempted =
+    questions.filter(q => q.answered).length;
+
+  questionContainer.hidden = true;
+  summaryEl.innerHTML = '';
+
+  const heading = document.createElement('h2');
+  heading.textContent = 'Practice completed!';
+
+  const score = document.createElement('div');
+  score.className = 'score';
+  score.textContent = correct + ' / ' + questions.length;
+
+  const detail = document.createElement('p');
+  detail.textContent =
+    correct + ' correct · ' + attempted +
+    ' attempted out of ' + questions.length + '.';
+
+  summaryEl.append(heading,score,detail);
+  summaryEl.hidden = false;
+
+  trackEvent('quiz_completed',{
+    topic:selectedTopic,
+    subtopic:subtopicSelect.value,
+    question_count:questions.length,
+    attempted_count:attempted,
+    correct_count:correct
+  });
+}
+
+/* START LOADING IMMEDIATELY IN BACKGROUND */
+loadQuestionBank();
+
+</script>
 </body>
 </html>
